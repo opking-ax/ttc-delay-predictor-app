@@ -37,7 +37,7 @@ pip install -r requirements.txt
 Get TTC transport Delay Data (2022-2024) from
 [Toronto Open Data Portal](https://open.toronto.ca/)
 - [TTC Bus Delay](https://open.toronto.ca/dataset/ttc-bus-delay-data/)
-and place them in `data/raw/bus/`.
+> and place them in `data/raw/bus/`.
 
 ### 3. Train the model
 ```bash
@@ -55,4 +55,5 @@ This will
 ## Data Source
 
 [TTC Open Data — Bus Delay Data](https://open.toronto.ca/dataset/ttc-bus-delay-data/)
-City of Toronto Open Data Portal. Data filtered to 2022–2024 to reflect post-COVID operations.
+> City of Toronto Open Data Portal.
+> Data filtered to 2022–2024 to reflect post-COVID operations.
