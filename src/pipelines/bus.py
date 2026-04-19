@@ -1,0 +1,31 @@
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from src.preprocess import preprocess
+from src.train import train
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+RAW_DIR = PROJECT_ROOT / "data" / "raw" / "bus"
+PROCESSED_PATH = PROJECT_ROOT / "data" / "processed" / "bus.csv"
+MODEL_DIR = PROJECT_ROOT / "models" / "bus"
+
+
+def run():
+    print("=" * 39)
+    print("  TTC Bus Delay Predictor - Pipeline")
+    print("=" * 39)
+
+    print("\n[1/2] Preprocessing raw bus data ...")
+    preprocess(raw_folder=RAW_DIR, output_path=PROCESSED_PATH)
+
+    print("\n[2/2] Training model ...")
+    features_cols = ['hour', "day_of_week", 'month', 'is_weekend', 'is_am_rush', 'is_pm_rush', 'direction', 'time_of_day', "route", "incident"]
+    train(features_cols, processed_csv=PROCESSED_PATH, model_dir=MODEL_DIR, transit_type='bus')
+
+    print("\n Bus Pipeline complete!")
+
+
+if __name__ == "__main__":
+    run()
