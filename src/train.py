@@ -75,7 +75,7 @@ def get_train_test_split(X: pd.DataFrame, y: pd.Series) -> tuple:
     return X_train, X_test, y_train, y_test
 
 
-def build_pipeline() -> Pipeline:
+def build_pipeline(model_name: str = "random_forest") -> Pipeline:
     """
     Build a scikit-learn Pipeline that:
         1. Uses 3 different encoders
@@ -107,7 +107,7 @@ def build_pipeline() -> Pipeline:
     pipeline = Pipeline(
         steps=[
             ("preprocessor", preprocessor),
-            ("classifier", MODELS_REGISTRY["random_forest"]),       # Using just random forest for now, would add the other at a later time
+            ("classifier", MODELS_REGISTRY[model_name]),       # Using just random forest for now, would add the other at a later time
         ]
     )
     return pipeline
@@ -173,7 +173,7 @@ def train(feature_cols: list[str],processed_csv: Path,model_dir: Path,transit_ty
             }
         )
 
-        pipeline = build_pipeline()
+        pipeline = build_pipeline(model_name)
         pipeline.fit(X_train, y_train)
 
         metrics = evaluate(pipeline, X_test, y_test)
