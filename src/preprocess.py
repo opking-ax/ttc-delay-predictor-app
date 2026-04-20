@@ -32,7 +32,6 @@ def drop_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.copy()
     unrequired = ["min_gap", "vehicle", "location"]
-    before = len(df)
     df = df.drop(unrequired, axis=1, errors="ignore")
     print(f"[preprocess] Dropped columns: {unrequired}")
     return df
@@ -44,7 +43,7 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
         - the target and/or key features are missing from the file
     """
     df = df.copy()
-    required = ["min_delay", "date", "time"]
+    required = ["min_delay", "date", "time", "route"]
     before = len(df)
     df = df.dropna(subset=required)
     print(f"[preprocess] Dropped {before - len(df)} rows with nulls in {required}")
@@ -73,6 +72,9 @@ def parse_datetime(df: pd.DataFrame) -> pd.DataFrame:
     # Rush Hours (AM: 8-9; PM: 16-18)
     df["is_am_rush"] = df["hour"].between(6, 9).astype(int)
     df["is_pm_rush"] = df["hour"].between(15, 19).astype(int)
+
+    unrequired = ["datetime"]
+    df = df.drop(unrequired, axis=1, errors="ignore")
 
     return df
 
@@ -110,7 +112,6 @@ def make_target(df: pd.DataFrame, threshold: int = DELAY_THRESHOLD) -> pd.DataFr
 def encode_categoricals(df: pd.DataFrame) -> pd.DataFrame:
     """
     Encoding high-cardinality categoricals
-    Rare categories (below top max_categories) are grouped as 'other'
     """
     df = df.copy()
     route_list = (
