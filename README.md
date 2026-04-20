@@ -46,7 +46,7 @@ python -m src.pipelines.bus
 This will
 - Preprocess and filter 2022-2024 data
 - Engineer temporal features (hour, rush hour flags, etc.)
-- Train a RandomForest Classifier, GradientBoostingClassifier and/or LogisticRegression
+- Train a RandomForest Classifier
 - Log the experiment to MLFlow
 - Save model artifacts to `models/bus/`
 
