@@ -29,3 +29,8 @@ class TransportDelay(BaseModel):
 @app.post("/predict")
 def predict_delay(data: TransportDelay):
     return prediction.predict(data.model_dump())
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
