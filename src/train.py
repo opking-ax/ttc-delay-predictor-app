@@ -32,18 +32,7 @@ MODELS_REGISTRY = {
         class_weight="balanced",
         random_state=RANDOM_STATE,
         n_jobs=-1,
-    ),
-    "gradient_boosting": GradientBoostingClassifier(
-        n_estimators=150,
-        max_depth=5,
-        learning_rate=0.1,
-        random_state=RANDOM_STATE,
-    ),
-    "logistic_regression": LogisticRegression(
-        max_iter=500,
-        class_weight="balanced",
-        random_state=RANDOM_STATE,
-    ),
+    )
 }
 
 
