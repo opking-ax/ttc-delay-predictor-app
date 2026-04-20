@@ -21,6 +21,8 @@ ttc-delay-predictor-app/
 │   ├── predict.py
 │   └── pipelines/
 │       └──bus.py
+├── api/
+│   └── main.py
 └── requirements.txt
 ```
 
@@ -49,6 +51,12 @@ This will
 - Train a RandomForest Classifier
 - Log the experiment to MLFlow
 - Save model artifacts to `models/bus/`
+
+### 4. View MLflow experiments
+```bash
+mlflow ui
+# Open http://localhost:5000
+```
 
 ---
 
