@@ -58,6 +58,11 @@ mlflow ui
 # Open http://localhost:5000
 ```
 
+### 5. Run the API
+```bash
+uvicorn api.main:app --reload
+# Docs at https://localhost:8000/docs
+```
 ---
 
 ## Data Source
