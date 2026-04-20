@@ -32,7 +32,18 @@ MODELS_REGISTRY = {
         class_weight="balanced",
         random_state=RANDOM_STATE,
         n_jobs=-1,
-    )
+    ),
+    "gradient_boosting": GradientBoostingClassifier(
+        n_estimators=150,
+        max_depth=5,
+        learning_rate=0.1,
+        random_state=RANDOM_STATE,
+    ),
+    "logistic_regression": LogisticRegression(
+        max_iter=500,
+        class_weight="balanced",
+        random_state=RANDOM_STATE,
+    ),
 }
 
 
@@ -136,8 +147,7 @@ def save_pipeline(pipeline, model_dir, model_path):
     print(f"\n[train] Model saved -> {model_path}")
 
 
-def train(feature_cols: list[str],processed_csv: Path,model_dir: Path,transit_type: str = "bus",model_name: str = "random_forest",
-) -> Pipeline:
+def train(processed_csv: Path, model_dir: Path, transit_type: str = "bus", model_name: str = "random_forest") -> Pipeline:
     """
     Load processed CSV, train a model, evaluate it, log everything to MLflow, and save
     the artifact.
@@ -146,7 +156,8 @@ def train(feature_cols: list[str],processed_csv: Path,model_dir: Path,transit_ty
     """
     df = load_data(processed_csv)
 
-    X, y, available = split_features_targets(df, feature_cols)
+    features_cols = ['hour', "day_of_week", 'month', 'is_weekend', 'is_am_rush', 'is_pm_rush', 'direction', 'time_of_day', "route", "incident"]
+    X, y, available = split_features_targets(df, features_cols)
 
     X_train, X_test, y_train, y_test = get_train_test_split(X, y)
 
@@ -166,9 +177,11 @@ def train(feature_cols: list[str],processed_csv: Path,model_dir: Path,transit_ty
         pipeline.fit(X_train, y_train)
 
         metrics = evaluate(pipeline, X_test, y_test)
-        for k, v in metrics.items():
+        metrics_log = {k: v for k, v in metrics.items() if v is not None}
+
+        for k, v in metrics_log.items():
             print(f"[train]    {k:10s}: {v:.4f}")
-        mlflow.log_metrics(metrics)
+        mlflow.log_metrics(metrics_log)
 
         model_path = model_dir / "model.pkl"
         save_pipeline(pipeline, model_dir, model_path)
