@@ -24,7 +24,9 @@ def run():
     features_cols = ['hour', "day_of_week", 'month', 'is_weekend', 'is_am_rush', 'is_pm_rush', 'direction', 'time_of_day', "route", "incident"]
     train(features_cols, processed_csv=PROCESSED_PATH, model_dir=MODEL_DIR, transit_type='bus')
 
-    print("\n Bus Pipeline complete!")
+    print("\n[Done] Bus Pipeline complete!")
+    print(f"    Model artifact: {MODEL_DIR / 'model.pkl'}")
+    print(f"    MLflow UI:      mlflow ui (open http://localhost:5000)")
 
 
 if __name__ == "__main__":
