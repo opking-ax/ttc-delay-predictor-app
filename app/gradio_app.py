@@ -60,8 +60,14 @@ def predict_delay(hour: int, route: str, incident: str, direction: str, day_of_w
     )
     acronyms = {"am", "pm"}
     tod_ouput = " ".join(w.upper() if w in acronyms else w.capitalize() for w in get_time_of_day(hour).split("_"))
+
+    if result["is_delayed"]:
+        results_output = "a delay greater than 15 minutes "
+    else:
+        results_output = "this trip will run on time or with a minor delay "
+
     detail_text = (
-        f"The model predicts a delay greater than 15 minutes "
+        f"The model predicts {results_output}"
         f"with **{confidence_pct:.1f}%** probability for:\n\n"
         f"- Route **{route}** heading **{direction}**\n"
         f"- Incident: **{incident}**\n"
