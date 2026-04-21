@@ -1,0 +1,15 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/       ./src/
+COPY api/       ./api/
+COPY app/       ./app/
+COPY models/    ./models/
+
+EXPOSE 7860
+
+CMD ["python", "app/gradio_app.py"]
