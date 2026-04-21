@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import gradio as gr
-from gradio.themes import Ocean, Citrus
+from gradio.themes import Ocean
 from src.predict import DelayPredictor
 import re
 
@@ -14,8 +14,6 @@ INCIDENTS = ['General Delay', 'Diversion', 'Operations - Operator', 'Security',
  'Utilized Off Route', 'Vision', 'Road Blocked - NON-TTC Collision',
  'Collision - TTC', 'Held By', 'Cleaning - Disinfection']
 
-TIME_OF_DAY_CHOICES = ['Overnight', 'AM Peak', 'Midday', 'PM Peak', 'Evening']
-
 DIRECTION_CHOICES = ["N", "S", "E", "W", "B", "U"]
 
 DAY_TUPLE = [
@@ -23,14 +21,23 @@ DAY_TUPLE = [
 ]
 
 MONTH_TUPLE = [
-    ("January",   1),  ("February",  2),   ("March",     3),
+    ("January",   1),  ("February",   2),  ("March",     3),
     ("April",     4),  ("May",        5),  ("June",      6),
     ("July",      7),  ("August",     8),  ("September", 9),
     ("October",  10),  ("November",  11),  ("December", 12),
 ]
 
+def get_time_of_day(hour:int) -> str:
+    if not 0 <= hour <= 23:
+        raise ValueError("[gradio app] Hour must be between 0 and 23")
 
-def predict_delay(hour: int, route: str, incident: str, direction: str, day_of_week: int, month: int, time_of_day: str) -> tuple[str, str]:
+    if hour <= 5: return "overnight"
+    elif hour <= 9: return "am_peak"
+    elif hour <= 15: return "midday"
+    elif hour <= 19: return "pm_peak"
+    return "Evening"
+
+def predict_delay(hour: int, route: str, incident: str, direction: str, day_of_week: int, month: int) -> tuple[str, str]:
     raw_data = {
         "hour": hour,
         "route": route,
@@ -38,7 +45,7 @@ def predict_delay(hour: int, route: str, incident: str, direction: str, day_of_w
         "direction": direction,
         "day_of_week": day_of_week,
         "month": month,
-        "time_of_day": time_of_day.lower().strip().replace(" ", "_"),
+        "time_of_day": get_time_of_day(hour),
         "is_weekend": 1 if day_of_week >= 5 else 0,
         "is_am_rush": 1 if 6 <= hour <= 9 else 0,
         "is_pm_rush": 1 if 15 <= hour <= 19 else 0
@@ -51,12 +58,14 @@ def predict_delay(hour: int, route: str, incident: str, direction: str, day_of_w
         f"### {result['label']}\n\n"
         f"**Confidence:** {confidence_pct:.1f}%"
     )
+    acronyms = {"am", "pm"}
+    tod_ouput = " ".join(w.upper() if w in acronyms else w.capitalize() for w in get_time_of_day(hour).split("_"))
     detail_text = (
         f"The model predicts a delay greater than 15 minutes "
         f"with **{confidence_pct:.1f}%** probability for:\n\n"
         f"- Route **{route}** heading **{direction}**\n"
         f"- Incident: **{incident}**\n"
-        f"- Hour **{hour:02d}:00** — {time_of_day}"
+        f"- Hour **{hour:02d}:00** — {tod_ouput}"
     )
     return label_text, detail_text
 
@@ -77,7 +86,6 @@ with gr.Blocks(title="TTC Delay Predictor") as demo:
     gr.Markdown("### Time Details")
     with gr.Row():
         hour_input = gr.Slider(label="Hour of Day (24h)", minimum=0, maximum=23, step=1, value=8, scale=3)
-        tod_input = gr.Dropdown(label="Time of Day", choices=TIME_OF_DAY_CHOICES, value="AM Peak", scale=2)
 
     with gr.Row():
         day_input = gr.Dropdown(label="Day of Week", choices=DAY_TUPLE, value=2, scale=2)
@@ -94,7 +102,7 @@ with gr.Blocks(title="TTC Delay Predictor") as demo:
 
     predict_btn.click(
         fn=predict_delay,
-        inputs=[hour_input, route_input, incident_input, direction_input, day_input, month_input, tod_input],
+        inputs=[hour_input, route_input, incident_input, direction_input, day_input, month_input],
         outputs=[label_output, detail_output]
     )
 
@@ -102,4 +110,4 @@ with gr.Blocks(title="TTC Delay Predictor") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(server_port=7860, show_error=True, theme=Citrus())
+    demo.launch(server_port=7860, show_error=True, theme=Ocean())
