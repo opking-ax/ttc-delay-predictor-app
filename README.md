@@ -23,6 +23,10 @@ ttc-delay-predictor-app/
 │       └──bus.py
 ├── api/
 │   └── main.py
+── app/
+│   └── gradio_app.py     # Gradio demo UI
+├── Dockerfile
+├── Dockerfile.gradio
 └── requirements.txt
 ```
 
@@ -62,6 +66,12 @@ mlflow ui
 ```bash
 uvicorn api.main:app --reload
 # Open https://localhost:8000/docs
+```
+
+### 6. Run the Gradio demo
+```bash
+python app/gradio_app.
+# Open at http://127.0.0.1:7860
 ```
 ---
 
