@@ -23,8 +23,8 @@ ttc-delay-predictor-app/
 │       └──bus.py
 ├── api/
 │   └── main.py
-── app/
-│   └── gradio_app.py     # Gradio demo UI
+├── app/
+│   └── gradio_app.py
 ├── Dockerfile
 ├── Dockerfile.gradio
 └── requirements.txt
