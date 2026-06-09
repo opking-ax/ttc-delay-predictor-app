@@ -4,14 +4,14 @@ import joblib
 import numpy as np
 import pandas as pd
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class DelayPredictor:
-    def __init__(self, transit_type: str = "bus"):
+    def __init__(self, transit_type: str = "bus", model_name: str = "random_forest"):
         self.transit_type = transit_type
-        model_path = PROJECT_ROOT / "models" / transit_type / "model.pkl"
+        self.model_name = model_name
+        model_path = PROJECT_ROOT / "models" / transit_type / f"{model_name}.pkl"
 
         if not model_path.exists():
             raise FileNotFoundError(
@@ -52,3 +52,22 @@ class DelayPredictor:
         label = "Delayed > 15 min" if is_delayed else "On Time / Minor Delay"
 
         return {"is_delayed": is_delayed, "probability": round(prob, 4), "label": label}
+
+
+if __name__ == "__main__":
+    prediction = DelayPredictor()
+    raw = {
+        "hour": 11,
+        "route": "96",
+        "incident": "operations_operator",
+        "direction": "U",
+        "day_of_week": 5,
+        "month": 1,
+        "time_of_day": "am_peak",
+        "is_weekend": 1,
+        "is_am_rush": 1,
+        "is_pm_rush": 0,
+    }
+
+    result = prediction.predict(raw)
+    print(result)

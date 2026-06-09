@@ -22,16 +22,17 @@ def load_raw(folder: Path) -> pd.DataFrame:
         frames.append(df)
 
     combined = pd.concat(frames, ignore_index=True)
-    print(f"Loaded {len(combined):,} rows from {len(xlsx_files)} files.")
+    print(f"[preprocess] Loaded {len(combined):,} rows from {len(xlsx_files)} files.")
+
     return combined
 
 
-def drop_columns(df: pd.DataFrame) -> pd.DataFrame:
+def drop_columns(df: pd.DataFrame, extra_drops: list[str] = []) -> pd.DataFrame:
     """
     Drops columns that are not needed for the project
     """
     df = df.copy()
-    unrequired = ["min_gap", "vehicle", "location"]
+    unrequired = ["min_gap", "vehicle"] + extra_drops
     df = df.drop(unrequired, axis=1, errors="ignore")
     print(f"[preprocess] Dropped columns: {unrequired}")
     return df
@@ -48,6 +49,13 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(subset=required)
     print(f"[preprocess] Dropped {before - len(df)} rows with nulls in {required}")
     return df.reset_index(drop=True)
+
+
+def normalize_columns(df: pd.DataFrame, column_map: dict = {}) -> pd.DataFrame:
+    """
+    Renames transit-specific columns names to shared expected names.
+    """
+    return df.rename(columns=column_map)
 
 
 def parse_datetime(df: pd.DataFrame) -> pd.DataFrame:
@@ -138,14 +146,19 @@ def encode_categoricals(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocess(raw_folder: Path, output_path: Path) -> pd.DataFrame:
+def preprocess(raw_folder: Path, output_path: Path, transit_type: str, column_maps: dict[str, str] = {}, extra_drops: list[str] = []) -> pd.DataFrame:
     """
     Full preprocessing pipeline.
     Returns the processed DataFrame and saves it as a CSV file.
     """
+    allowed_transit = {"bus", "streetcar", "subway"}
+    if transit_type not in allowed_transit:
+        raise ValueError(f"[prerocess] transit type must be either Bus, Streetcar or Subway")
+
     df = load_raw(raw_folder)
+    df = normalize_columns(df, column_maps)
     df = clean(df)
-    df = drop_columns(df)
+    df = drop_columns(df, extra_drops)
     df = parse_datetime(df)
     df = add_time_of_day(df)
     df = make_target(df)

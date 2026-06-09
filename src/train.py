@@ -107,7 +107,7 @@ def build_pipeline(model_name: str = "random_forest") -> Pipeline:
     pipeline = Pipeline(
         steps=[
             ("preprocessor", preprocessor),
-            ("classifier", MODELS_REGISTRY[model_name]),       # Using just random forest for now, would add the other at a later time
+            ("classifier", MODELS_REGISTRY[model_name]),
         ]
     )
     return pipeline
@@ -147,16 +147,19 @@ def save_pipeline(pipeline, model_dir, model_path):
     print(f"\n[train] Model saved -> {model_path}")
 
 
-def train(processed_csv: Path, model_dir: Path, transit_type: str = "bus", model_name: str = "random_forest") -> Pipeline:
+def train(features_cols: list[str], processed_csv: Path, model_dir: Path, transit_type: str = "bus", model_name: str = "random_forest") -> Pipeline:
     """
     Load processed CSV, train a model, evaluate it, log everything to MLflow, and save
     the artifact.
 
     Returns the trained Pipeline
     """
+    allowed_transit = {"bus", "streetcar", "subway"}
+    if transit_type not in allowed_transit:
+        raise ValueError(f"[train] transit type must be either Bus, Streetcar or Subway")
+
     df = load_data(processed_csv)
 
-    features_cols = ['hour', "day_of_week", 'month', 'is_weekend', 'is_am_rush', 'is_pm_rush', 'direction', 'time_of_day', "route", "incident"]
     X, y, available = split_features_targets(df, features_cols)
 
     X_train, X_test, y_train, y_test = get_train_test_split(X, y)
@@ -176,6 +179,7 @@ def train(processed_csv: Path, model_dir: Path, transit_type: str = "bus", model
         pipeline = build_pipeline(model_name)
         pipeline.fit(X_train, y_train)
 
+        print(f"[train [{model_name}]]")
         metrics = evaluate(pipeline, X_test, y_test)
         metrics_log = {k: v for k, v in metrics.items() if v is not None}
 
@@ -183,10 +187,9 @@ def train(processed_csv: Path, model_dir: Path, transit_type: str = "bus", model
             print(f"[train]    {k:10s}: {v:.4f}")
         mlflow.log_metrics(metrics_log)
 
-        model_path = model_dir / "model.pkl"
+        model_path = model_dir / f"{model_name}.pkl"
         save_pipeline(pipeline, model_dir, model_path)
-
-        mlflow.sklearn.log_model(pipeline, "model")
+        mlflow.sklearn.log_model(pipeline, name="model")
         mlflow.log_artifact(str(model_path))
 
     return pipeline
